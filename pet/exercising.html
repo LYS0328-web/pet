@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>運動偵測狗狗動畫</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"DFKai-SB","標楷體",sans-serif;
+}
+
+body{
+    background:#d8c5a9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:420px;
+    text-align:center;
+}
+
+.scene{
+    width:100%;
+    height:620px;
+    background:#2f416f;
+    position:relative;
+    overflow:hidden;
+    border-radius:0 0 40px 40px;
+}
+
+/* 標題 */
+
+.title{
+    color:white;
+    font-size:50px;
+    padding-top:20px;
+}
+
+/* 月亮 */
+
+.moon{
+    width:110px;
+    height:110px;
+    background:#f7b93e;
+    border-radius:50%;
+    position:absolute;
+    top:120px;
+    right:40px;
+}
+
+/* 建築 */
+
+.building{
+    position:absolute;
+    bottom:0;
+    background:#2b1207;
+    border-radius:10px 10px 0 0;
+}
+
+.b1{
+    width:90px;
+    height:300px;
+    left:40px;
+}
+
+.b2{
+    width:100px;
+    height:430px;
+    left:120px;
+}
+
+.b3{
+    width:105px;
+    height:310px;
+    left:250px;
+}
+
+.b4{
+    width:80px;
+    height:250px;
+    right:10px;
+}
+
+/* 窗戶 */
+
+.window{
+    width:16px;
+    height:22px;
+    background:#ffd54d;
+    position:absolute;
+}
+
+.w1{top:40px; left:20px;}
+.w2{top:80px; left:50px;}
+.w3{top:140px; left:30px;}
+.w4{top:190px; left:55px;}
+.w5{top:240px; left:25px;}
+
+/* 狗 */
+
+.dog{
+    width:150px;
+    position:absolute;
+    bottom:30px;
+    left:120px;
+    transition:0.2s;
+}
+
+/* 走路動畫 */
+
+.walking{
+    animation:walk 0.4s infinite alternate;
+}
+
+@keyframes walk{
+
+    0%{
+        transform:translateX(0px) rotate(2deg);
+    }
+
+    100%{
+        transform:translateX(12px) rotate(-2deg);
+    }
+}
+
+/* 資訊區 */
+
+.info{
+    margin-top:25px;
+    font-size:32px;
+}
+
+#status{
+    margin-top:20px;
+    font-size:28px;
+    font-weight:bold;
+}
+
+/* 按鈕 */
+
+button{
+    margin-top:30px;
+    padding:18px 40px;
+    font-size:24px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#ececec;
+}
+
+button:hover{
+    background:#d7d7d7;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="scene">
+
+        <h1 class="title">晚上-動畫</h1>
+
+        <div class="moon"></div>
+
+        <!-- 建築 -->
+        <div class="building b1">
+            <div class="window w1"></div>
+            <div class="window w2"></div>
+            <div class="window w3"></div>
+            <div class="window w4"></div>
+            <div class="window w5"></div>
+        </div>
+
+        <div class="building b2">
+            <div class="window w1"></div>
+            <div class="window w2"></div>
+            <div class="window w3"></div>
+            <div class="window w4"></div>
+            <div class="window w5"></div>
+        </div>
+
+        <div class="building b3">
+            <div class="window w1"></div>
+            <div class="window w2"></div>
+            <div class="window w3"></div>
+            <div class="window w4"></div>
+            <div class="window w5"></div>
+        </div>
+
+        <div class="building b4">
+            <div class="window w1"></div>
+            <div class="window w2"></div>
+            <div class="window w3"></div>
+            <div class="window w4"></div>
+        </div>
+
+        <!-- 狗 -->
+        <img
+            src="https://cdn-icons-png.flaticon.com/512/616/616408.png"
+            class="dog"
+            id="dog"
+        >
+
+    </div>
+
+    <div class="info">
+        手機移動 → 狗會走路
+    </div>
+
+    <div id="status">
+        等待感測器啟動...
+    </div>
+
+    <button onclick="requestMotionPermission()">
+        開始偵測運動
+    </button>
+
+</div>
+
+<script>
+
+const dog = document.getElementById("dog");
+const statusText = document.getElementById("status");
+
+let lastMoveTime = Date.now();
+
+/*
+    啟動手機感測器
+*/
+
+function requestMotionPermission(){
+
+    // iPhone 必須要求權限
+
+    if(typeof DeviceMotionEvent.requestPermission === "function"){
+
+        DeviceMotionEvent.requestPermission()
+        .then(permissionState => {
+
+            if(permissionState === "granted"){
+
+                startMotionDetection();
+
+            }else{
+
+                statusText.innerHTML = "感測器權限被拒絕";
+            }
+
+        })
+        .catch(error => {
+
+            console.log(error);
+
+        });
+
+    }else{
+
+        // Android
+        startMotionDetection();
+    }
+}
+
+/*
+    開始偵測
+*/
+
+function startMotionDetection(){
+
+    statusText.innerHTML = "開始偵測運動...";
+
+    window.addEventListener("devicemotion", function(event){
+
+        let x = event.accelerationIncludingGravity.x || 0;
+        let y = event.accelerationIncludingGravity.y || 0;
+        let z = event.accelerationIncludingGravity.z || 0;
+
+        // 計算移動強度
+
+        let totalMovement =
+            Math.abs(x) +
+            Math.abs(y) +
+            Math.abs(z);
+
+        console.log(totalMovement);
+
+        /*
+            閾值可調整
+            越小越敏感
+        */
+
+        if(totalMovement > 15){
+
+            dog.classList.add("walking");
+
+            statusText.innerHTML = "偵測到運動中！";
+
+            lastMoveTime = Date.now();
+
+        }
+
+    });
+
+    /*
+        超過1秒沒移動
+        停止動畫
+    */
+
+    setInterval(()=>{
+
+        let currentTime = Date.now();
+
+        if(currentTime - lastMoveTime > 1000){
+
+            dog.classList.remove("walking");
+
+            statusText.innerHTML = "目前沒有運動";
+        }
+
+    },200);
+
+}
+
+</script>
+
+</body>
+</html>
