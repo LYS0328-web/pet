@@ -87,7 +87,9 @@
             object-fit: contain;
             opacity: 0; /* 預設先完全隱形 */
             /* 輪播動畫核心：總共 0.6 秒輪播，無限循環 */
-            animation: playFrames 0.6s steps(1) infinite;
+            animation: playFrames 0.6s linear infinite;
+/*            animation: playFrames 0.6s steps(1) infinite;
+*/
         }
 
         /* 關鍵點：利用延遲時間（Delay）錯開三張圖，達成逐幀動畫 */
@@ -180,30 +182,46 @@
     <script>
         // 1. 自動偵測目前死掉的是哪一隻寵物以及其成長狀態
         const selectedPet = localStorage.getItem('selectedPet') || '小狗';
-        const currentStage = localStorage.getItem('petStage') || 'B'; // 取得 B / T / A 狀態 (預設為幼年期 B)
 
-        const petCodeMap = { '小狗': 'Dog', '小貓': 'Cat', '小鴨': 'Duck', '小兔': 'Rabbit' };
+        const currentStage = localStorage.getItem('petStage') || 'B';
+
+        // 寵物代碼表
+        const petCodeMap = {
+            '小狗': 'Dog',
+            '小貓': 'Cat',
+            '小鴨': 'Duck',
+            '小兔': 'Rabbit'
+        };
+
         const petCode = petCodeMap[selectedPet] || 'Dog';
-        
-        // 根據目前選中的寵物名稱，動態產生對應的文字
-        document.getElementById('sub-msg-text').textContent = `你的${selectedPet}就這樣上天堂了`;
 
-        // 2. 獲取三個圖片幀的 DOM 節點
+        // 顯示文字
+        document.getElementById('sub-msg-text').textContent =
+        `你的${selectedPet}就這樣上天堂了`;
+
+        // 取得三張圖
         const imgFrame1 = document.getElementById('frame-1');
         const imgFrame2 = document.getElementById('frame-2');
         const imgFrame3 = document.getElementById('frame-3');
 
-        // 3. 🌟 智慧拼裝出全新帶有成長狀態的命名邏輯 (例如：BDogDeath1.png、TCatDeath2.png)
-        imgFrame1.src = `ADuckDeath1.png`;
+        // 動態切換動畫圖片
+        imgFrame1.src = `${currentStage}${petCode}Death1.png`;
+
         imgFrame2.src = `${currentStage}${petCode}Death2.png`;
+
         imgFrame3.src = `${currentStage}${petCode}Death3.png`;
-//to佑珊:目前第一張寫死示範 等素材做動圖
-        // 4. 點擊按鈕重置遊戲並跳轉
+
+
+        // 點擊重新開始
         document.getElementById('restart-btn').addEventListener('click', () => {
-            // 清除累積時間與型態狀態，復活並重新開始
+
+            // 清除資料
             localStorage.removeItem('petStage');
-            // 將跳轉目的地從 'index.html' 改為 '2.html'
-            window.location.href = 'choose.html'; 
+            localStorage.removeItem('selectedPet');
+
+            // 返回選擇頁
+            window.location.href = 'choose.html';
+
         });
     </script>
 </body>
