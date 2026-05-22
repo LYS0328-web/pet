@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>運動偵測兔兔動畫</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"DFKai-SB","標楷體",sans-serif;
+}
+
+body{
+    background:#d8c5a9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:500px;
+    text-align:center;
+}
+
+.title{
+    font-size:42px;
+    margin-bottom:20px;
+}
+
+.scene img,
+.scene video{
+    width:100%;
+    height:auto;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+.scene video{
+    display:none;
+}
+
+.info{
+    margin-top:20px;
+    font-size:28px;
+    display:flex;
+    justify-content:space-between;
+}
+
+#status{
+    margin-top:15px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+button{
+    margin-top:25px;
+    padding:16px 30px;
+    font-size:22px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#eee;
+}
+button:hover{ background:#ddd; }
+
+#waterPopup{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.popupBox{
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1 class="title">和貓貓一起運動吧~</h1>
+
+    <div class="scene">
+        <img id="rabbitImage" src="./rabbit_stop_morning.png">
+        <video id="rabbitVideo" muted loop playsinline>
+            <source id="videoSource" src="">
+        </video>
+    </div>
+
+    <div class="info">
+        <div>運動時長</div>
+        <div id="timeText">0 分鐘</div>
+    </div>
+
+    <div id="status">等待感測器啟動...</div>
+
+    <button onclick="requestMotionPermission()">開始運動</button>
+</div>
+
+<!-- 水提醒 -->
+<div id="waterPopup">
+    <div class="popupBox">
+        <h2>喝水提醒💧</h2>
+        <p>記得補充水分！</p>
+        <button onclick="closePopup()">好</button>
+    </div>
+</div>
+
+<script>
+
+const rabbitImage = document.getElementById("rabbitImage");
+const rabbitVideo = document.getElementById("rabbitVideo");
+const videoSource = document.getElementById("videoSource");
+const statusText = document.getElementById("status");
+const timeText = document.getElementById("timeText");
+
+let isMoving = false;
+let exerciseSeconds = 0;
+let lastMoveTime = Date.now();
+let currentVideo = "";
+let waterShown = false;
+
+/* 判斷白天 */
+function isDayTime(){
+    let h = new Date().getHours();
+    return h >= 6 && h < 18;
+}
+
+/* 更新畫面（重點：不閃版本） */
+function updateDisplay(){
+
+    let video = "";
+
+    if(isDayTime()){
+
+        if(isMoving){
+
+            if(exerciseSeconds >= 180){
+                video = "./rabbit_adult_morning.mp4";
+            }else if(exerciseSeconds >= 120){
+                video = "./rabbit_teen_morning.mp4";
+            }else{
+                video = "./rabbit_baby_morning.mp4";
+            }
+
+            if(currentVideo !== video){
+                currentVideo = video;
+                videoSource.src = video;
+                rabbitVideo.load();
+                rabbitVideo.play().catch(()=>{});
+            }
+
+            rabbitImage.style.display = "none";
+            rabbitVideo.style.display = "block";
+
+        }else{
+
+            rabbitVideo.pause();
+            currentVideo = "";
+
+            if(exerciseSeconds >= 180){
+                rabbitImage.src = "./rabbit_adult_morning.png";
+            }else if(exerciseSeconds >= 120){
+                rabbitImage.src = "./rabbit_teen_morning.png";
+            }else{
+                rabbitImage.src = "./rabbit_baby_morning.png";
+            }
+
+//            rabbitImage.src = "./rabbit_stop_morning.png";
+            rabbitImage.style.display = "block";
+            rabbitVideo.style.display = "none";
+        }
+
+    }else{
+
+        if(isMoving){
+
+            if(exerciseSeconds >= 3600){
+                video = "./rabbit_adult_night.mp4";
+            }else if(exerciseSeconds >= 1800){
+                video = "./rabbit_teen_night.mp4";
+            }else{
+                video = "./rabbit_baby_night.mp4";
+            }
+
+            if(currentVideo !== video){
+                currentVideo = video;
+                videoSource.src = video;
+                rabbitVideo.load();
+                rabbitVideo.play().catch(()=>{});
+            }
+
+            rabbitImage.style.display = "none";
+            rabbitVideo.style.display = "block";
+
+        }else{
+
+            rabbitVideo.pause();
+            currentVideo = "";
+
+            if(exerciseSeconds >= 180){
+                rabbitImage.src = "./rabbit_adult_morning.png";
+            }else if(exerciseSeconds >= 120){
+                rabbitImage.src = "./rabbit_teen_morning.png";
+            }else{
+                rabbitImage.src = "./rabbit_baby_morning.png";
+            }
+
+//            rabbitImage.src = "./rabbit_stop_night.png";
+            rabbitImage.style.display = "block";
+            rabbitVideo.style.display = "none";
+        }
+    }
+}
+
+/* 感測器 */
+function startMotion(){
+
+    statusText.innerText = "偵測中...";
+
+    window.addEventListener("devicemotion", e => {
+
+        let x = e.accelerationIncludingGravity.x || 0;
+        let y = e.accelerationIncludingGravity.y || 0;
+        let z = e.accelerationIncludingGravity.z || 0;
+
+        let move = Math.abs(x)+Math.abs(y)+Math.abs(z);
+
+        if(move > 15){
+            lastMoveTime = Date.now();
+
+            if(!isMoving){
+                isMoving = true;
+                statusText.innerText = "運動中";
+                updateDisplay();
+            }
+        }
+    });
+
+    /* 停止判斷 */
+    setInterval(()=>{
+        if(Date.now() - lastMoveTime > 1200){
+            if(isMoving){
+                isMoving = false;
+                statusText.innerText = "停止運動";
+                updateDisplay();
+            }
+        }
+    },300);
+
+    /* 計時 */
+    setInterval(()=>{
+        if(isMoving){
+            exerciseSeconds++;
+
+            let m = Math.floor(exerciseSeconds/60);
+            timeText.innerText = m + " 分鐘";
+
+            if(m >= 1 && !waterShown){
+                waterShown = true;
+                const popup = document.getElementById("waterPopup");
+                popup.style.display = "flex";
+
+            /* 🔥 手機震動 */
+                if (navigator.vibrate) {
+                    navigator.vibrate([300, 100, 300]);
+                }
+            }
+
+            updateDisplay();
+        }
+    },1000);
+}
+
+/* 權限 */
+function requestMotionPermission(){
+
+    if(typeof DeviceMotionEvent !== "undefined" &&
+       typeof DeviceMotionEvent.requestPermission === "function"){
+
+        DeviceMotionEvent.requestPermission()
+        .then(p=>{
+            if(p==="granted") startMotion();
+        });
+
+    }else{
+        startMotion();
+    }
+}
+
+function closePopup(){
+    document.getElementById("waterPopup").style.display="none";
+}
+
+</script>
+
+</body>
+</html>
