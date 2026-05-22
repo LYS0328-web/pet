@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>步米 BUMi</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Microsoft JhengHei", sans-serif;
+}
+
+body{
+    background:#d9c6ae;
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background-image:
+    linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+
+    background-size:20px 20px;
+}
+
+.paw{
+    width:80%;
+    max-width:350px;
+    margin-bottom:60px;
+}
+
+/* ⭐ 改成直式長方形 */
+.container{
+    width:100%;
+    max-width:420px;
+    min-height:700px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+
+    padding:40px 20px;
+
+    background:#ecd8bf;
+
+    border:6px solid #4d3b2f;
+
+    box-shadow:8px 8px 0 #8d715a;
+}
+
+/* 標題 */
+.title-cn{
+    font-size:64px;
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#4d3b2f;
+    text-shadow:4px 4px 0 #b69472;
+}
+
+.title-en{
+    font-size:48px;
+    font-weight:bold;
+    margin-bottom:40px;
+    color:#7a5a45;
+    text-shadow:3px 3px 0 #c8a98b;
+}
+
+/* 按鈕 */
+.buttons{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.btn{
+    flex:1;
+    background:#f6f1e8;
+    border:none;
+    padding:20px 10px;
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.15s;
+    border:5px solid #4d3b2f;
+    box-shadow:0 6px 0 #9b7d62;
+    color:#4d3b2f;
+}
+
+.btn:hover{
+    transform:translateY(2px);
+    box-shadow:0 4px 0 #9b7d62;
+    background:#fff8ef;
+}
+
+.btn:last-child{
+    background:#d7ead7;
+}
+
+/* 手機 */
+@media(max-width:600px){
+    .container{width:92%; padding:30px 15px;}
+    .title-cn{font-size:48px;}
+    .title-en{font-size:36px;}
+    .buttons{flex-direction:column;}
+    .btn{width:100%; font-size:22px;}
+    .pixel-dog{transform:scale(8); margin:30px 0 60px 0;}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="title-cn">步米</div>
+    <div class="title-en">BUMi</div>
+
+    <!-- 像素狗 -->
+    <img src="dog_adult.png" alt="paw" class="paw">
+
+    <div class="buttons">
+        <a href = 'choose.html'>
+            <button class="btn">出發</button>
+        </a>
+
+        <a href = 'chart.html'>
+            <button class="btn">觀看歷史紀錄</button>
+        </a>
+        
+    </div>
+
+</div>
+
+</body>
+</html>

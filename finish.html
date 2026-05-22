@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>步米 BUMi - 運動總結</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #DCC7B1; /* 溫柔米黃色底色 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background-color: #DCC7B1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 30px;
+        }
+
+        /* 上方灰色寵物卡片區 */
+        .summary-card {
+            width: 100%;
+            max-width: 340px;
+            background-color: #D9D9D9; /* 淺灰色背景 */
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin-bottom: 35px;
+        }
+
+        .action-hint {
+            align-self: flex-end;
+            font-size: 16px;
+            color: #000000;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .pet-summary-img {
+            width: 80%;
+            max-width: 200px;
+            height: 180px;
+            object-fit: contain;
+            margin: 10px 0;
+        }
+
+        /* 數據報告區 */
+        .report-section {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-self: flex-start;
+            padding-left: 10px;
+        }
+
+        .data-row {
+            font-size: 20px;
+            color: #000000;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* 恭喜與動態食物區塊 */
+        .congrats-container {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            min-height: 180px; 
+        }
+
+        .congrats-text {
+            font-size: 18px;
+            color: #000000;
+            font-weight: bold;
+            line-height: 1.5;
+            z-index: 2;
+            max-width: 60%;
+        }
+
+        /* 右下角動態食物圖片 */
+        .food-img {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            z-index: 1;
+        }
+
+        /* 完成按鈕 */
+        .done-button {
+            margin-top: auto;
+            background-color: #E2E2E2;
+            color: #000000;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="content">
+            
+            <div class="summary-card">
+                <div class="action-hint" id="action-text"></div>
+                <img src="" alt="寵物運動完圖片" id="summary-pet-img" class="pet-summary-img">
+                    <!--to佑珊:可以討論要不要做動圖(目前只有一張圖我就先放著)-->
+            </div>
+
+            <div class="report-section">
+                <div class="data-row">
+                    今日運動總時長：&nbsp;&nbsp;&nbsp;&nbsp;<span id="total-time">0</span> 分鐘
+                </div>
+                <div class="data-row">
+                    換算成卡路里後：&nbsp;&nbsp;&nbsp;&nbsp;<span id="total-calories">0</span> 大卡
+                </div>
+            </div>
+
+            <div class="congrats-container">
+                <div class="congrats-text" id="congrats-message">
+                    恭喜你，消耗了一份...的熱量!!!
+                </div>
+                <img src="" alt="食物圖片" id="food-target-img" class="food-img">
+            </div>
+
+            <button class="done-button" onclick="location.href='index.html'">完成</button><!--to佑珊:我總覺得沒連主頁怪怪的(不知道安卓返回鍵到底連去哪裡)所以我放了一個按鈕，那看你需不需要~~-->
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 寵物與成長型態判定
+        // ==========================================
+        const selectedPet = localStorage.getItem('selectedPet') || '小狗';
+        const currentStage = localStorage.getItem('petStage') || 'B'; 
+
+        const actionText = document.getElementById('action-text');
+        const summaryPetImg = document.getElementById('summary-pet-img');
+
+        let petVerb = selectedPet.replace('小', ''); 
+        //actionText.textContent = `${petVerb}在吐舌頭散熱`;
+
+        const petCodeMap = {
+            '小狗': 'Dog',
+            '小貓': 'Cat',
+            '小鴨': 'Duck',
+            '小兔': 'Rabbit'
+        };
+        const petCode = petCodeMap[selectedPet] || 'Dog';
+
+        const generatedPetImgName = `${currentStage}${petCode}_ExeEnd.png`;
+        summaryPetImg.src = generatedPetImgName;
+        summaryPetImg.alt = selectedPet + '運動完圖片';
+
+        // ==========================================
+        // 2. 核心要求：假設運動 50 分鐘並計算熱量
+        // ==========================================
+        const exerciseMinutes = 180; //to佑珊:目前寫死，之後改你設的變數名
+        const caloriesBurned = 60*(exerciseMinutes /60); //to佑珊:目前寫死，之後改你設的變數名，假設使用者60KG
+
+        document.getElementById('total-time').textContent = exerciseMinutes;
+        document.getElementById('total-calories').textContent = caloriesBurned;
+
+        // ==========================================
+        // 3. 熱量食物對照表資料庫
+        // ==========================================
+        const foodTable = [
+            { name: "西瓜(240g/一片)", time: 12, file: "watermelon.png" },
+            { name: "小籠包", time: 21, file: "xiaolongbao.png" },
+            { name: "水煮蛋", time: 24, file: "boiled_egg.png" },
+            { name: "低糖茶 350ml", time: 30, file: "low_sugar_tea.png" },
+            { name: "柳橙原汁 236ml", time: 33, file: "orange_juice.png" },
+            { name: "布丁(100g)", time: 33, file: "pudding.png" },
+            { name: "清蒸檸檬魚(100g)", time: 40.5, file: "lemon_fish.png" },
+            { name: "可樂 350ml", time: 51, file: "cola.png" },
+            { name: "月亮蝦餅(100g)", time: 57, file: "shrimp_pancake.png" },
+            { name: "手捲壽司(100g)", time: 67.5, file: "hand_roll_sushi.png" },
+            { name: "薯條(中)", time: 75, file: "french_fries.png" },
+            { name: "比士吉", time: 78, file: "biscuit.png" },
+            { name: "廣東粥", time: 93, file: "cantonese_porridge.png" },
+            { name: "火腿蛋餅", time: 114, file: "ham_egg_crepe.png" },
+            { name: "雞排堡", time: 120, file: "chicken_burger.png" },
+            { name: "珍珠奶茶700㏄", time: 123, file: "bubble_tea.png" },
+            { name: "起司加蛋漢堡", time: 141, file: "cheese_egg_burger.png" },
+            { name: "燒烤鰻魚飯", time: 180, file: "grilled_eel_rice.png" },
+            { name: "炸雞腿飯", time: 243, file: "fried_chicken_rice.png" },
+            { name: "三寶飯", time: 288, file: "three_treasures_rice.png" },
+            { name: "鮮蝦鳳梨個人披薩", time: 300, file: "pizza.png" }
+        ];
+
+        function getClosestFood(minutes) {
+            let closest = foodTable[0];
+            let minDiff = Math.abs(minutes - closest.time);
+
+            for (let i = 1; i < foodTable.length; i++) {
+                let diff = Math.abs(minutes - foodTable[i].time);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = foodTable[i];
+                }
+            }
+            return closest;
+        }
+
+        const matchedFood = getClosestFood(exerciseMinutes);
+
+        // ==========================================
+        // 4. 將資料渲染到網頁畫面上（加入 Food/ 資料夾路徑）
+        // ==========================================
+        const congratsMessage = document.getElementById('congrats-message');
+        const foodTargetImg = document.getElementById('food-target-img');
+
+        congratsMessage.textContent = `恭喜你，消耗了一份${matchedFood.name}的熱量!!!`;
+        
+        // 這裡將圖片路徑加上 Food/ 資料夾前綴
+        foodTargetImg.src = "Food/" + matchedFood.file;
+        foodTargetImg.alt = matchedFood.name;
+    </script>
+</body>
+</html>
