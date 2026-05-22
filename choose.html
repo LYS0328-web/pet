@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>步米 BUMi - 開始運動</title>
+    <style>
+        /* 全域樣式：消除所有預設邊距 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 消除手機點擊時的藍色陰影 */
+        }
+
+        body {
+            background-color: #DCC7B1; /* 根據原圖提取的米黃色底色 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* 手機容器：移除了原本的 border 黑線，並改為全螢幕填滿 */
+        .phone-container {
+            width: 100%;
+            max-width: 450px; /* 限制電腦測試時的最大寬度，手機上會自動 100% */
+            min-height: 100vh;
+            background-color: #DCC7B1; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 主要內容排版 */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 24px 20px 24px;
+        }
+
+        /* 頂部大標題 */
+        .instruction-text {
+            font-size: 24px;
+            color: #000000;
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        /* 寵物按鈕網格 (2x2) */
+        .pet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 45px;
+        }
+
+        /* 寵物按鈕預設樣式：深咖啡色 */
+        .pet-button {
+            background-color: #61351A; /* 深咖啡色 */
+            border: none;
+            border-radius: 40px; /* 圓角效果 */
+            padding: 20px 16px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        /* 寵物按鈕內圖片樣式 */
+        .pet-image {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        /* 寵物按鈕內部的文字標籤 */
+        .pet-label {
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* 寵物按鈕被選取時的狀態：變為淺咖啡色 */
+        .pet-button.active {
+            background-color: #9C6F53; /* 淺咖啡色 */
+        }
+
+        /* 底部操作與說明區 */
+        .action-section {
+            margin-top: auto; /* 自動推至手機最底部 */
+            padding-bottom: 30px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* 動態連動文字區 */
+        .ready-text {
+            font-size: 18px;
+            color: #000000;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        /* 開始運動按鈕 */
+        .start-button {
+            background-color: #E2E2E2; /* 淺灰色按鈕 */
+            color: #000000;
+            border: none;
+            border-radius: 4px;
+            padding: 14px 60px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        <div class="content">
+            <div class="instruction-text">先來選一隻跟你一起運動的寵物吧！</div>
+            
+            <div class="pet-grid">
+                
+                <button class="pet-button active" data-name="小狗">
+                    <a href = 'dog_exercise.html'>
+                        <img src="BDog.png" alt="小狗" class="pet-image">
+                    </a>
+                    
+                    
+                </button>
+                
+                <button class="pet-button" data-name="小貓">
+                    <a href = 'cat_exercise.html'>
+                        <img src="BCat.png" alt="小貓" class="pet-image">
+                    </a>
+                    
+                    
+                </button>
+                
+                <button class="pet-button" data-name="小鴨">
+                    <a href = 'duck_exercise.html'>
+                        <img src="BDuck.png" alt="小鴨" class="pet-image">
+                    </a>
+                    
+                    
+                </button>
+                
+                <button class="pet-button" data-name="小兔">
+                    <a href = 'rabbit_exercise.html'>
+                        <img src="BRabbit.png" alt="小兔" class="pet-image">
+                    </a>
+                    
+                    
+                </button>
+                
+            </div>
+            
+            <div class="action-section">
+                <div class="ready-text">
+                    準備好和<span id="pet-target">小狗</span>一起運動了嗎？
+                </div>
+                <button class="start-button">開始運動</button> <!--to佑珊:這個按鈕按下去要接你的分頁喔(看下JS註解)-->
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    const petButtons = document.querySelectorAll('.pet-button');
+    const petTarget = document.getElementById('pet-target');
+    const startButton = document.querySelector('.start-button'); // 取得開始運動按鈕
+
+    let currentSelected = '小狗'; // 預設選中
+
+    petButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            petButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentSelected = button.getAttribute('data-name');
+            petTarget.textContent = currentSelected;
+        });
+    });
+
+// 當點擊開始運動時，把正確的寵物存進快取，並跳轉到下一頁
+    startButton.addEventListener('click', () => {
+    localStorage.setItem('selectedPet', currentSelected);
+    // to佑珊:這裡改接分頁，例如：location.href = '3.html';
+});
+    </script>
+</body>
+</html>

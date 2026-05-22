@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>步米 BUMi - 歷史紀錄與圖鑑</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #DCC7B1; /* 步米招牌柔美米黃色 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background-color: #DCC7B1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            overflow-y: auto;
+        }
+
+        h2 {
+            font-size: 22px;
+            color: #000000;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-bottom: 15px;
+        }
+
+        /* ==========================================
+           上半部：這周運動紀錄圖表 (精準防跑版結構)
+           ========================================== */
+        .chart-container {
+            width: 100%;
+            background-color: transparent;
+            padding: 10px 5px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #4D82FF;
+            border-radius: 50%;
+        }
+
+        /* 圖表主框架：包含長條柱與底部的星期 */
+        .chart-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* 長條柱繪製區（底部帶有主要 X 軸實線） */
+        .bar-chart-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 200px; /* 圖表高度 */
+            border-bottom: 2px solid #999; /* X 軸實線 */
+            padding: 0 10px 0 25px; /* 留出左邊給 Y 軸文字 */
+            position: relative;
+            width: 100%;
+        }
+
+        /* Y軸背景刻度虛線容器 */
+        .y-axis-lines {
+            position: absolute;
+            width: calc(100% - 35px);
+            height: 100%;
+            left: 25px;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .y-line {
+            width: 100%;
+            border-top: 1px solid rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .y-line::before {
+            content: attr(data-val);
+            position: absolute;
+            left: -25px;
+            top: -8px;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+            width: 20px;
+            text-align: right;
+        }
+
+        /* 單個長條柱 */
+        .bar-pillar {
+            width: 11%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            z-index: 2;
+            position: relative;
+        }
+
+        .bar {
+            width: 100%;
+            background-color: #4D82FF; 
+            border-radius: 6px 6px 0 0;
+            position: relative;
+            height: 0%; /* 由 JS 控制成長 */
+            transition: height 0.6s cubic-bezier(0.1, 1, 0.1, 1);
+        }
+
+        .bar-val {
+            position: absolute;
+            top: -22px;
+            width: 100%;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* 修正核心：獨立出來的底部日期文字區，百分之百鎖在底線下方 */
+        .chart-labels-area {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px 0 25px; /* 與上方柱狀圖左右對齊完全一致 */
+            width: 100%;
+        }
+
+        .bar-label {
+            width: 11%; /* 與上方長條寬度完全對齊 */
+            text-align: center;
+            font-size: 11px;
+            color: #000000;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* ==========================================
+           下半部：寵物成長狀態與雙圖進化區
+           ========================================== */
+        .evolution-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-title {
+            font-size: 20px;
+            color: #A0522D; 
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        .display-card {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px 10px;
+            margin-bottom: 30px;
+        }
+
+        .stage-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 42%;
+        }
+
+        .stage-box img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .stage-label {
+            font-size: 15px;
+            color: #FFFFFF;
+            font-weight: bold;
+            background-color: #61351A; 
+            padding: 4px 14px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .arrow {
+            font-size: 38px;
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .btn-home {
+            background-color: #E2E2E2;
+            color: #000000;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 60px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        
+        <h2>這周運動紀錄：</h2>
+        
+        <div class="chart-container">
+            <div class="chart-legend">
+                <div class="legend-dot"></div>
+                <div>運動時長</div>
+            </div>
+            
+            <div class="chart-wrapper">
+                
+                <div class="bar-chart-area" id="bar-chart-container">
+                    <div class="y-axis-lines">
+                        <div class="y-line" data-val="50"></div><!--to佑珊:目前y軸是最大值，看你覺得需不需要做調整-->
+                        <div class="y-line" data-val="40"></div>
+                        <div class="y-line" data-val="30"></div>
+                        <div class="y-line" data-val="20"></div>
+                        <div class="y-line" data-val="10"></div>
+                        <div class="y-line" data-val="0"></div>
+                    </div>
+                </div>
+
+                <div class="chart-labels-area" id="bar-labels-container"></div>
+
+            </div>
+        </div>
+
+        <h2>寵物成長狀態：</h2>
+        
+        <div class="evolution-section">
+            <div class="status-title" id="status-title-text">正在讀取成長狀態...</div>
+            
+            <div class="display-card">
+                <div class="stage-box">
+                    <img src="" alt="前形態" id="left-img">
+                    <div class="stage-label" id="left-label">???</div>
+                </div>
+                
+                <div class="arrow">➔</div>
+                
+                <div class="stage-box">
+                    <img src="" alt="後形態" id="right-img">
+                    <div class="stage-label" id="right-label">???</div>
+                </div>
+            </div>
+
+            <button class="btn-home" onclick="location.href='index.html'">返回主頁</button><!--to佑珊:我總覺得沒連主頁怪怪的(不知道安卓返回鍵到底連去哪裡)所以我放了一個按鈕，那看你需不需要~~-->
+            
+        </div>
+
+    </div>
+
+    <script>
+        // ====================================================
+        // 【全自動數據更動區】
+        // ====================================================
+        const weeklyData = [
+            { day: "星期一", value: 30 }, 
+            { day: "星期二", value: 50 },
+            { day: "星期三", value: 45 },
+            { day: "星期四", value: 30 },
+            { day: "星期五", value: 25 },
+            { day: "星期六", value: 50 },
+            { day: "星期天", value: 40 }
+        ];//to佑珊:目前weeklyData是寫死的數據，看到時候你把7天數據分別存到甚麼變數
+
+        // 累積總運動時間（進化門檻測試控制）
+        const totalExerciseMinutes = 90; //to佑珊:totalExerciseMinutes可以調看看數字，那到時候就是7個變數相加存到totalExerciseMinutes
+
+        // ====================================================
+        // 1. 分流智慧渲染：長條與日期分開，確保字在線下
+        // ====================================================
+        const chartContainer = document.getElementById('bar-chart-container');
+        const labelsContainer = document.getElementById('bar-labels-container');
+        const maxScale = 50; 
+
+        weeklyData.forEach(item => {
+            // A. 計算高度並加入上方長條圖區域
+            const heightPercent = (item.value / maxScale) * 100;
+            const pillar = document.createElement('div');
+            pillar.className = 'bar-pillar';
+            pillar.innerHTML = `
+                <div class="bar" style="height: ${heightPercent}%;">
+                    <div class="bar-val">${item.value}</div>
+                </div>
+            `;
+            chartContainer.appendChild(pillar);
+
+            // B. 將日期標籤獨立加入底線下方的專屬區塊
+            const label = document.createElement('div');
+            label.className = 'bar-label';
+            label.textContent = item.day;
+            labelsContainer.appendChild(label);
+        });
+
+        // ====================================================
+        // 2. 寵物成長與進化新門檻邏輯
+        // ====================================================
+        const selectedPet = localStorage.getItem('selectedPet') || '小狗';
+        const petCodeMap = { '小狗': 'Dog', '小貓': 'Cat', '小鴨': 'Duck', '小兔': 'Rabbit' };
+        const petCode = petCodeMap[selectedPet] || 'Dog';
+        const petNoun = selectedPet.replace('小', '');
+
+        const leftImg = document.getElementById('left-img');
+        const rightImg = document.getElementById('right-img');
+        const leftLabel = document.getElementById('left-label');
+        const rightLabel = document.getElementById('right-label');
+        const statusTitleText = document.getElementById('status-title-text');
+
+        if (totalExerciseMinutes >= 180) {
+            leftImg.src = `T${petCode}.png`;
+            rightImg.src = `A${petCode}.png`;
+            leftLabel.textContent = "青少年期";
+            rightLabel.textContent = "成年期";
+            statusTitleText.textContent = `現在已經是成年${petNoun}${petNoun}囉~加油加油!`;
+            localStorage.setItem('petStage', 'A');
+        } else if (totalExerciseMinutes >= 90) {
+            leftImg.src = `B${petCode}.png`;
+            rightImg.src = `T${petCode}.png`;
+            leftLabel.textContent = "幼年期";
+            rightLabel.textContent = "青少年期";
+            statusTitleText.textContent = `正在朝向青少年${petNoun}前進！繼續維持！`;
+            localStorage.setItem('petStage', 'T');
+        } else if (totalExerciseMinutes >= 0) {
+            leftImg.src = "Egg.png";
+            rightImg.src = `B${petCode}.png`;
+            leftLabel.textContent = "寵物蛋";
+            rightLabel.textContent = "幼年期";
+            statusTitleText.textContent = `順利破殼！初生健康的幼年小${petNoun}！`;
+            localStorage.setItem('petStage', 'B');
+        }
+    </script>
+</body>
+</html>

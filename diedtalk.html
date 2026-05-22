@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>步米 BUMi - 傷心的結局</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #DCC7B1; /* 步米經典柔美米黃色 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background-color: #DCC7B1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 24px;
+            overflow-y: auto;
+        }
+
+        /* 頂部我有話要說標題 */
+        .speech-title {
+            font-size: 26px;
+            color: #000000;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-bottom: 40px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ==========================================
+           核心特效：3張圖片輪播的天使動畫區
+           ========================================== */
+        .grave-scene-container {
+            width: 100%;
+            max-width: 360px;
+            height: 300px;
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        /* 背景墓碑圖片（預留位置，你可以放入墓碑圖檔） */
+        .tombstone-bg {
+            position: absolute;
+            left: 10%;
+            bottom: 10%;
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+            z-index: 1;
+        }
+
+        /* 天使動物動畫外殼（帶有上下漂浮效果） */
+        .angel-anim-wrapper {
+            position: absolute;
+            right: 5%;
+            top: 15%;
+            width: 130px;
+            height: 130px;
+            z-index: 2;
+            /* 讓小狗帶有一點微微上下漂浮的靈魂感 */
+            animation: floatingSoul 2s ease-in-out infinite; 
+        }
+
+        /* 三張圖片重疊在同個位置 */
+        .angel-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0; /* 預設先完全隱形 */
+            /* 輪播動畫核心：總共 0.6 秒輪播，無限循環 */
+            animation: playFrames 0.6s steps(1) infinite;
+        }
+
+        /* 關鍵點：利用延遲時間（Delay）錯開三張圖，達成逐幀動畫 */
+        #frame-1 { animation-delay: 0s; }
+        #frame-2 { animation-delay: 0.2s; }
+        #frame-3 { animation-delay: 0.4s; }
+
+        /* CSS 逐幀動畫控制：在自己的時間區段內亮起(opacity:1)，其餘時間隱形 */
+        @keyframes playFrames {
+            0%, 33.33% { opacity: 1; }
+            33.34%, 100% { opacity: 0; }
+        }
+
+        /* 微微上下漂浮的物理特效 */
+        @keyframes floatingSoul {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* ==========================================
+           文案與重新開始按鈕區
+           ========================================== */
+        .death-message-box {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .main-message {
+            font-size: 18px;
+            color: #000000;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .sub-message {
+            font-size: 16px;
+            color: #333333;
+            font-weight: bold;
+        }
+
+        /* 再來一次，這次一定行按鈕 */
+        .restart-button {
+            background-color: #E2E2E2; /* 原圖中的灰白底色 */
+            color: #000000;
+            border: none;
+            border-radius: 4px;
+            padding: 14px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            margin-top: auto; /* 確保按鈕被推到最下方 */
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .restart-button:active {
+            background-color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-container">
+        
+        <div class="speech-title">我有話要說.......</div>
+
+        <div class="grave-scene-container">
+            <img src="tombstone.png" alt="墓碑背景" class="tombstone-bg">
+
+            <div class="angel-anim-wrapper">
+                <img src="" alt="死亡動畫1" id="frame-1" class="angel-frame">
+                <img src="" alt="死亡動畫2" id="frame-2" class="angel-frame">
+                <img src="" alt="死亡動畫3" id="frame-3" class="angel-frame">
+            </div>
+        </div>
+
+        <div class="death-message-box">
+            <div class="main-message">太難過了！你居然沒有堅持運動.....</div>
+            <div class="sub-message" id="sub-msg-text"></div>
+        </div>
+
+        <button class="restart-button" id="restart-btn">再來一次，這次一定行</button>
+
+    </div>
+
+    <script>
+        // 1. 自動偵測目前死掉的是哪一隻寵物以及其成長狀態
+        const selectedPet = localStorage.getItem('selectedPet') || '小狗';
+        const currentStage = localStorage.getItem('petStage') || 'B'; // 取得 B / T / A 狀態 (預設為幼年期 B)
+
+        const petCodeMap = { '小狗': 'Dog', '小貓': 'Cat', '小鴨': 'Duck', '小兔': 'Rabbit' };
+        const petCode = petCodeMap[selectedPet] || 'Dog';
+        
+        // 根據目前選中的寵物名稱，動態產生對應的文字
+        document.getElementById('sub-msg-text').textContent = `你的${selectedPet}就這樣上天堂了`;
+
+        // 2. 獲取三個圖片幀的 DOM 節點
+        const imgFrame1 = document.getElementById('frame-1');
+        const imgFrame2 = document.getElementById('frame-2');
+        const imgFrame3 = document.getElementById('frame-3');
+
+        // 3. 🌟 智慧拼裝出全新帶有成長狀態的命名邏輯 (例如：BDogDeath1.png、TCatDeath2.png)
+        imgFrame1.src = `ADuckDeath1.png`;
+        imgFrame2.src = `${currentStage}${petCode}Death2.png`;
+        imgFrame3.src = `${currentStage}${petCode}Death3.png`;
+//to佑珊:目前第一張寫死示範 等素材做動圖
+        // 4. 點擊按鈕重置遊戲並跳轉
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            // 清除累積時間與型態狀態，復活並重新開始
+            localStorage.removeItem('petStage');
+            // 將跳轉目的地從 'index.html' 改為 '2.html'
+            window.location.href = 'choose.html'; 
+        });
+    </script>
+</body>
+</html>
