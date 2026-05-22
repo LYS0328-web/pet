@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Android 震動測試</title>
+
+<style>
+
+body{
+
+    margin:0;
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+
+    height:100vh;
+
+    background:#f5e6cc;
+
+    font-family:"DFKai-SB","標楷體",sans-serif;
+}
+
+.container{
+
+    text-align:center;
+}
+
+h1{
+
+    font-size:40px;
+
+    margin-bottom:40px;
+}
+
+button{
+
+    width:260px;
+
+    padding:20px;
+
+    margin:15px;
+
+    font-size:24px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:#ffffff;
+
+    cursor:pointer;
+
+    box-shadow:0 5px 10px rgba(0,0,0,0.2);
+}
+
+button:active{
+
+    transform:scale(0.96);
+}
+
+#status{
+
+    margin-top:30px;
+
+    font-size:24px;
+
+    color:#333;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        Android 震動測試
+    </h1>
+
+    <!-- 單次震動 -->
+
+    <button onclick="singleVibrate()">
+        單次震動測試
+    </button>
+
+    <br>
+
+    <!-- 連續震動 -->
+
+    <button onclick="patternVibrate()">
+        連續震動測試
+    </button>
+
+    <div id="status">
+        等待測試...
+    </div>
+
+</div>
+
+<script>
+
+/*
+    狀態文字
+*/
+
+const statusText =
+    document.getElementById("status");
+
+/*
+    單次震動
+*/
+
+function singleVibrate(){
+
+    /*
+        檢查手機是否支援震動
+    */
+
+    if(navigator.vibrate){
+
+        /*
+            震動1秒
+        */
+
+        navigator.vibrate(1000);
+
+        statusText.innerHTML =
+            "已觸發單次震動";
+
+    }else{
+
+        statusText.innerHTML =
+            "此裝置不支援震動";
+    }
+}
+
+/*
+    連續震動
+*/
+
+function patternVibrate(){
+
+    if(navigator.vibrate){
+
+        /*
+            震動模式：
+            震500ms
+            停200ms
+            再震500ms
+        */
+
+        navigator.vibrate([500,200,500]);
+
+        statusText.innerHTML =
+            "已觸發連續震動";
+
+    }else{
+
+        statusText.innerHTML =
+            "此裝置不支援震動";
+    }
+}
+
+</script>
+
+</body>
+</html>
