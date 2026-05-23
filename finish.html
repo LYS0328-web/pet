@@ -174,6 +174,8 @@
         const selectedPet = localStorage.getItem('selectedPet') || '小狗';
         const currentStage = localStorage.getItem('petStage') || 'B'; 
 
+        const exerciseSeconds = parseInt(localStorage.getItem('exerciseSeconds')) || 0;
+        
         const actionText = document.getElementById('action-text');
         const summaryPetImg = document.getElementById('summary-pet-img');
 
@@ -195,8 +197,8 @@
         // ==========================================
         // 2. 核心要求：假設運動 50 分鐘並計算熱量
         // ==========================================
-        const exerciseMinutes = 180; //to佑珊:目前寫死，之後改你設的變數名
-        const caloriesBurned = 60*(exerciseMinutes /60); //to佑珊:目前寫死，之後改你設的變數名，假設使用者60KG
+        const exerciseMinutes = Math.floor(exerciseSeconds / 60);; //to佑珊:目前寫死，之後改你設的變數名
+        const caloriesBurned = Math.floor(exerciseMinutes * 1); //to佑珊:目前寫死，之後改你設的變數名，假設使用者60KG
 
         document.getElementById('total-time').textContent = exerciseMinutes;
         document.getElementById('total-calories').textContent = caloriesBurned;
