@@ -300,19 +300,40 @@
         // ====================================================
         // 【全自動數據更動區】
         // ====================================================
-        const weeklyData = [
-            { day: "星期一", value: 30 }, 
-            { day: "星期二", value: 50 },
-            { day: "星期三", value: 45 },
-            { day: "星期四", value: 30 },
-            { day: "星期五", value: 25 },
-            { day: "星期六", value: 50 },
-            { day: "星期天", value: 40 }
-        ];//to佑珊:目前weeklyData是寫死的數據，看到時候你把7天數據分別存到甚麼變數
+        // ====================================================
+// 自動讀取這周運動資料
+// ====================================================
 
-        // 累積總運動時間（進化門檻測試控制）
-        const totalExerciseMinutes = 90; //to佑珊:totalExerciseMinutes可以調看看數字，那到時候就是7個變數相加存到totalExerciseMinutes
+// 星期名稱
+const weekNames = [
+    "星期天",
+    "星期一",
+    "星期二",
+    "星期三",
+    "星期四",
+    "星期五",
+    "星期六"
+];
 
+// 取得今天星期幾
+const today = new Date().getDay();
+
+// 讀取 localStorage
+let weeklyData = [];
+let totalExerciseMinutes = 0;
+
+for(let i = 0; i < 7; i++){
+
+    // 從 localStorage 讀資料
+    const minutes = parseInt(localStorage.getItem(`exercise_day_${i}`)) || 0;
+
+    weeklyData.push({
+        day: weekNames[i],
+        value: minutes
+    });
+
+    totalExerciseMinutes += minutes;
+}
         // ====================================================
         // 1. 分流智慧渲染：長條與日期分開，確保字在線下
         // ====================================================
