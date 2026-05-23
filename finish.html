@@ -197,7 +197,7 @@
         // ==========================================
         // 2. 核心要求：假設運動 50 分鐘並計算熱量
         // ==========================================
-        const exerciseMinutes = Math.floor(exerciseSeconds / 60);; //to佑珊:目前寫死，之後改你設的變數名
+        const exerciseMinutes = Math.max(1, Math.floor(exerciseSeconds / 60)); //to佑珊:目前寫死，之後改你設的變數名
         const caloriesBurned = Math.floor(exerciseMinutes * 1); //to佑珊:目前寫死，之後改你設的變數名，假設使用者60KG
 
         document.getElementById('total-time').textContent = exerciseMinutes;
