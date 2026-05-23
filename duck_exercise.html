@@ -141,37 +141,26 @@ let lastMoveTime = Date.now();
 let currentVideo = "";
 let waterShown = false;
 
-/* 判斷白天 */
+/* 白天判斷 */
 function isDayTime(){
-
     let h = new Date().getHours();
-
     return h >= 6 && h < 18;
 }
 
-/* 成長階段判定 */
+/* 成長階段 */
 function updatePetStage(){
-
     let stage = "B";
-
-    // B = Baby
-    // T = Teen
-    // A = Adult
 
     if(exerciseSeconds >= 180){
         stage = "A";
-    }
-    else if(exerciseSeconds >= 120){
+    }else if(exerciseSeconds >= 120){
         stage = "T";
-    }
-    else{
-        stage = "B";
     }
 
     localStorage.setItem("petStage", stage);
 }
 
-/* 更新畫面 */
+/* 畫面更新 */
 function updateDisplay(){
 
     let video = "";
@@ -181,26 +170,17 @@ function updateDisplay(){
         if(isMoving){
 
             if(exerciseSeconds >= 180){
-
                 video = "./duck_adult_morning.mp4";
-
             }else if(exerciseSeconds >= 120){
-
                 video = "./duck_teen_morning.mp4";
-
             }else{
-
                 video = "./duck_baby_morning.mp4";
             }
 
             if(currentVideo !== video){
-
                 currentVideo = video;
-
                 videoSource.src = video;
-
                 duckVideo.load();
-
                 duckVideo.play().catch(()=>{});
             }
 
@@ -210,19 +190,13 @@ function updateDisplay(){
         }else{
 
             duckVideo.pause();
-
             currentVideo = "";
 
             if(exerciseSeconds >= 180){
-
                 duckImage.src = "./duck_adult_morning.png";
-
             }else if(exerciseSeconds >= 120){
-
                 duckImage.src = "./duck_teen_morning.png";
-
             }else{
-
                 duckImage.src = "./duck_baby_morning.png";
             }
 
@@ -235,26 +209,17 @@ function updateDisplay(){
         if(isMoving){
 
             if(exerciseSeconds >= 180){
-
                 video = "./duck_adult_night.mp4";
-
             }else if(exerciseSeconds >= 120){
-
                 video = "./duck_teen_night.mp4";
-
             }else{
-
                 video = "./duck_baby_night.mp4";
             }
 
             if(currentVideo !== video){
-
                 currentVideo = video;
-
                 videoSource.src = video;
-
                 duckVideo.load();
-
                 duckVideo.play().catch(()=>{});
             }
 
@@ -264,19 +229,13 @@ function updateDisplay(){
         }else{
 
             duckVideo.pause();
-
             currentVideo = "";
 
             if(exerciseSeconds >= 180){
-
                 duckImage.src = "./duck_adult_night.png";
-
             }else if(exerciseSeconds >= 120){
-
                 duckImage.src = "./duck_teen_night.png";
-
             }else{
-
                 duckImage.src = "./duck_baby_night.png";
             }
 
@@ -286,7 +245,7 @@ function updateDisplay(){
     }
 }
 
-/* 感測器啟動 */
+/* 感測器 */
 function startMotion(){
 
     statusText.innerText = "偵測中...";
@@ -297,69 +256,49 @@ function startMotion(){
         let y = e.accelerationIncludingGravity.y || 0;
         let z = e.accelerationIncludingGravity.z || 0;
 
-        let move = Math.abs(x) + Math.abs(y) + Math.abs(z);
+        let move = Math.abs(x)+Math.abs(y)+Math.abs(z);
 
         if(move > 15){
-
             lastMoveTime = Date.now();
-
             if(!isMoving){
-
                 isMoving = true;
-
                 statusText.innerText = "運動中";
-
                 updateDisplay();
             }
         }
     });
 
-    /* 停止判定 */
     setInterval(()=>{
 
         if(Date.now() - lastMoveTime > 1200){
 
             if(isMoving){
-
                 isMoving = false;
-
                 statusText.innerText = "停止運動";
-
                 updateDisplay();
             }
         }
 
     },300);
 
-    /* 計時 */
     setInterval(()=>{
 
         if(isMoving){
 
             exerciseSeconds++;
 
-            /* 存進 localStorage */
-            localStorage.setItem('exerciseSeconds', exerciseSeconds);
+            localStorage.setItem("exerciseSeconds", exerciseSeconds);
 
-            /* 更新成長階段 */
             updatePetStage();
 
-            let m = Math.floor(exerciseSeconds / 60);
-
+            let m = Math.floor(exerciseSeconds/60);
             timeText.innerText = m + " 分鐘";
 
-            /* 喝水提醒 */
             if(m >= 1 && !waterShown){
-
                 waterShown = true;
+                document.getElementById("waterPopup").style.display = "flex";
 
-                const popup = document.getElementById("waterPopup");
-
-                popup.style.display = "flex";
-
-                /* 手機震動 */
                 if(navigator.vibrate){
-
                     navigator.vibrate([300,100,300]);
                 }
             }
@@ -376,35 +315,40 @@ function requestMotionPermission(){
     if(typeof DeviceMotionEvent !== "undefined" &&
        typeof DeviceMotionEvent.requestPermission === "function"){
 
-        DeviceMotionEvent.requestPermission()
-        .then(p=>{
-
-            if(p === "granted"){
-
-                startMotion();
-            }
+        DeviceMotionEvent.requestPermission().then(p=>{
+            if(p === "granted") startMotion();
         });
 
     }else{
-
         startMotion();
     }
 }
 
-/* 關閉喝水提醒 */
+/* 關閉 popup */
 function closePopup(){
-
     document.getElementById("waterPopup").style.display = "none";
 }
 
-/* 結束運動 */
+/* 🔥 結束運動（已串 history + finish） */
 function goFinish(){
 
-    // 最後存一次資料
-    localStorage.setItem('exerciseSeconds', exerciseSeconds);
+    // 存秒數
+    localStorage.setItem("exerciseSeconds", exerciseSeconds);
 
     // 更新階段
     updatePetStage();
+
+    // 今天星期
+    const today = new Date().getDay();
+
+    // 轉分鐘
+    const minutes = Math.floor(exerciseSeconds / 60);
+
+    // 讀舊資料
+    const old = parseInt(localStorage.getItem(`exercise_day_${today}`)) || 0;
+
+    // 累加
+    localStorage.setItem(`exercise_day_${today}`, old + minutes);
 
     // 跳轉
     window.location.href = "finish.html";
