@@ -270,6 +270,11 @@ function startMotion(){
     setInterval(()=>{
         if(isMoving){
             exerciseSeconds++;
+            
+            /*新增*/
+            localStorage.setItem('exerciseSeconds', exerciseSeconds);
+            updatePetStage();
+
 
             let m = Math.floor(exerciseSeconds/60);
             timeText.innerText = m + " 分鐘";
