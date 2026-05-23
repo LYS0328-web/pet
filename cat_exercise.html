@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>運動偵測貓貓動畫</title>
+<title>運動偵測小貓動畫</title>
 
 <style>
 *{
@@ -68,7 +68,10 @@ button{
     cursor:pointer;
     background:#eee;
 }
-button:hover{ background:#ddd; }
+
+button:hover{
+    background:#ddd;
+}
 
 #waterPopup{
     position:fixed;
@@ -95,7 +98,8 @@ button:hover{ background:#ddd; }
     <h1 class="title">和小貓一起運動吧~</h1>
 
     <div class="scene">
-        <img id="catImage" src="./cat_adult.png">
+        <img id="catImage" src="./cat_baby_morning.png">
+
         <video id="catVideo" muted loop playsinline>
             <source id="videoSource" src="">
         </video>
@@ -109,12 +113,12 @@ button:hover{ background:#ddd; }
     <div id="status">等待感測器啟動...</div>
 
     <button onclick="requestMotionPermission()">開始運動</button>
-    <a href = 'finish.html'>
-        <button class="btn">結束運動</button>
-    </a>
+
+    <button class="btn" onclick="goFinish()">結束運動</button>
+
 </div>
 
-<!-- 水提醒 -->
+<!-- 喝水提醒 -->
 <div id="waterPopup">
     <div class="popupBox">
         <h2>喝水提醒💧</h2>
@@ -137,13 +141,26 @@ let lastMoveTime = Date.now();
 let currentVideo = "";
 let waterShown = false;
 
-/* 判斷白天 */
+/* 白天判斷 */
 function isDayTime(){
     let h = new Date().getHours();
     return h >= 6 && h < 18;
 }
 
-/* 更新畫面（重點：不閃版本） */
+/* 成長階段 */
+function updatePetStage(){
+    let stage = "B";
+
+    if(exerciseSeconds >= 180){
+        stage = "A";
+    }else if(exerciseSeconds >= 120){
+        stage = "T";
+    }
+
+    localStorage.setItem("petStage", stage);
+}
+
+/* 畫面更新 */
 function updateDisplay(){
 
     let video = "";
@@ -183,7 +200,6 @@ function updateDisplay(){
                 catImage.src = "./cat_baby_morning.png";
             }
 
-//            catImage.src = "./cat_stop_morning.png";
             catImage.style.display = "block";
             catVideo.style.display = "none";
         }
@@ -192,9 +208,9 @@ function updateDisplay(){
 
         if(isMoving){
 
-            if(exerciseSeconds >= 3600){
+            if(exerciseSeconds >= 180){
                 video = "./cat_adult_night.mp4";
-            }else if(exerciseSeconds >= 1800){
+            }else if(exerciseSeconds >= 120){
                 video = "./cat_teen_night.mp4";
             }else{
                 video = "./cat_baby_night.mp4";
@@ -216,14 +232,13 @@ function updateDisplay(){
             currentVideo = "";
 
             if(exerciseSeconds >= 180){
-                catImage.src = "./cat_adult_morning.png";
+                catImage.src = "./cat_adult_night.png";
             }else if(exerciseSeconds >= 120){
-                catImage.src = "./cat_teen_morning.png";
+                catImage.src = "./cat_teen_night.png";
             }else{
-                catImage.src = "./cat_baby_morning.png";
+                catImage.src = "./cat_baby_night.png";
             }
 
-//            catImage.src = "./dog_stop_night.png";
             catImage.style.display = "block";
             catVideo.style.display = "none";
         }
@@ -245,7 +260,6 @@ function startMotion(){
 
         if(move > 15){
             lastMoveTime = Date.now();
-
             if(!isMoving){
                 isMoving = true;
                 statusText.innerText = "運動中";
@@ -254,38 +268,44 @@ function startMotion(){
         }
     });
 
-    /* 停止判斷 */
     setInterval(()=>{
+
         if(Date.now() - lastMoveTime > 1200){
+
             if(isMoving){
                 isMoving = false;
                 statusText.innerText = "停止運動";
                 updateDisplay();
             }
         }
+
     },300);
 
-    /* 計時 */
     setInterval(()=>{
+
         if(isMoving){
+
             exerciseSeconds++;
+
+            localStorage.setItem("exerciseSeconds", exerciseSeconds);
+
+            updatePetStage();
 
             let m = Math.floor(exerciseSeconds/60);
             timeText.innerText = m + " 分鐘";
 
             if(m >= 1 && !waterShown){
                 waterShown = true;
-                const popup = document.getElementById("waterPopup");
-                popup.style.display = "flex";
+                document.getElementById("waterPopup").style.display = "flex";
 
-            /* 🔥 手機震動 */
-                if (navigator.vibrate) {
-                    navigator.vibrate([300, 100, 300]);
+                if(navigator.vibrate){
+                    navigator.vibrate([300,100,300]);
                 }
             }
 
             updateDisplay();
         }
+
     },1000);
 }
 
@@ -295,9 +315,8 @@ function requestMotionPermission(){
     if(typeof DeviceMotionEvent !== "undefined" &&
        typeof DeviceMotionEvent.requestPermission === "function"){
 
-        DeviceMotionEvent.requestPermission()
-        .then(p=>{
-            if(p==="granted") startMotion();
+        DeviceMotionEvent.requestPermission().then(p=>{
+            if(p === "granted") startMotion();
         });
 
     }else{
@@ -305,8 +324,34 @@ function requestMotionPermission(){
     }
 }
 
+/* 關閉 popup */
 function closePopup(){
-    document.getElementById("waterPopup").style.display="none";
+    document.getElementById("waterPopup").style.display = "none";
+}
+
+/* 🔥 結束運動（已串 history + finish） */
+function goFinish(){
+
+    // 存秒數
+    localStorage.setItem("exerciseSeconds", exerciseSeconds);
+
+    // 更新階段
+    updatePetStage();
+
+    // 今天星期
+    const today = new Date().getDay();
+
+    // 轉分鐘
+    const minutes = Math.floor(exerciseSeconds / 60);
+
+    // 讀舊資料
+    const old = parseInt(localStorage.getItem(`exercise_day_${today}`)) || 0;
+
+    // 累加
+    localStorage.setItem(`exercise_day_${today}`, old + minutes);
+
+    // 跳轉
+    window.location.href = "finish.html";
 }
 
 </script>
